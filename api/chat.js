@@ -1,3 +1,11 @@
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '1mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -9,8 +17,18 @@ export default async function handler(req, res) {
 
   try {
     let body = req.body;
+
+    // Handle cases where body might be a string
     if (typeof body === 'string') {
-      body = JSON.parse(body);
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid JSON body' });
+      }
+    }
+
+    if (!body || !body.messages) {
+      return res.status(400).json({ error: 'Missing messages in request body' });
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -20,7 +38,12 @@ export default async function handler(req, res) {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        model: body.model || 'claude-sonnet-4-20250514',
+        max_tokens: body.max_tokens || 1000,
+        system: body.system || '',
+        messages: body.messages
+      })
     });
 
     const data = await response.json();
