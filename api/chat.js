@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: body.model || 'claude-sonnet-4-20250514',
+        model: body.model || 'claude-3-5-sonnet-20241022',
         max_tokens: body.max_tokens || 1000,
         system: body.system || '',
         messages: body.messages
@@ -53,3 +53,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Error connecting to AI service', details: error.message });
   }
 }
+
